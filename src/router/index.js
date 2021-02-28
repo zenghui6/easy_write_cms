@@ -69,26 +69,44 @@ export const constantRoutes = [
     path: '/client',
     component: Layout,
     redirect: '/client/article',
-    name: 'Example',
-    meta: { title: '官网数据管理', icon: 'el-icon-s-help' },
+    name: 'client',
+    meta: { title: '官网管理', icon: 'el-icon-s-help' },
     children: [
       {
         path: 'article',
         name: 'article',
-        component: () => import('@/views/table/index'),
-        meta: { title: '文章管理', icon: 'el-icon-s-management' }
+        component: () => import('@/views/article/index'),
+        meta: { title: '文章发布', icon: 'el-icon-s-management' },
       },
+
+      {
+        path: 'create',
+        name: 'create',
+        hidden: true ,
+        component: () => import('@/views/article/create/index'),
+        meta: { title: '新建文章', icon: 'el-icon-s-management' ,activeMenu: '/client/article'}
+      },
+      {
+        path: 'edit/:id/',
+        component: () => import('@/views/article/edit'),
+        name: 'EditArticle',
+        meta: { title: 'Edit Article', noCache: true, activeMenu: '/client/article' },
+        hidden: true
+      },
+        
+   
+      
       {
         path: 'video',
         name: 'video',
         component: () => import('@/views/tree/index'),
-        meta: { title: '视频管理', icon: 'el-icon-video-camera-solid' }
+        meta: { title: '视频发布', icon: 'el-icon-video-camera-solid' }
       },
       {
         path: 'swiper',
         name: 'swiper',
         component: () => import('@/views/tree/index'),
-        meta: { title: '轮播图管理', icon: 'el-icon-picture' }
+        meta: { title: '轮播图发布', icon: 'el-icon-picture' }
       }
     ]
   },
@@ -101,7 +119,7 @@ export const constantRoutes = [
       path: 'media',
       name: 'media',
       component: () => import('@/views/dashboard/index'),
-      meta: { title: '媒体分发管理', icon: 'el-icon-s-operation' }
+      meta: { title: '媒体分发', icon: 'el-icon-s-operation' }
     }]
   },
 
@@ -111,15 +129,15 @@ export const constantRoutes = [
     redirect: '/account',
     name: 'account',
     meta: {
-      title: '员工管理',
-      icon: 'el-icon-s-custom'
+      title: '小程序',
+      icon: 'el-icon-star-on'
     },
     children: [
       {
-        path: 'article',
-        name: 'article',
-        component: () => import('@/views/table/index'),
-        meta: { title: '文章管理', icon: 'el-icon-s-management' }
+        path: 'miniprogram',
+        name: 'miniprogram',
+        component: () => import('@/views/article/index'),
+        meta: { title: '文章管理', icon: 'el-icon-star-on' }
       },
       {
         path: 'video',
@@ -135,28 +153,49 @@ export const constantRoutes = [
       }
     ]
   },
-
   {
-    path: '/form',
+    path: '/admin',
     component: Layout,
+    redirect: '/admin',
+    name: 'admin',
+    meta: {
+      title: '管理员',
+      icon: 'el-icon-s-custom'
+    },
     children: [
       {
-        path: 'index',
-        name: 'Form',
-        component: () => import('@/views/form/index'),
-        meta: { title: 'Form', icon: 'form' }
-      }
-    ]
-  },
-
-  {
-    path: 'external-link',
-    component: Layout,
-    children: [
+        path: 'article',
+        name: 'article',
+        component: () => import('@/views/article/index'),
+        meta: { title: '人员管理', icon: 'el-icon-user' }
+      },
       {
-        path: 'https://panjiachen.github.io/vue-element-admin-site/#/',
-        meta: { title: 'External Link', icon: 'link' }
-      }
+        path: 'examine',
+        name: 'examine',
+        component: () => import('@/views/tree/index'),
+        meta: { title: '审核', icon: 'el-icon-search'
+       },
+          children: [
+            {
+              path: 'article',
+              name: 'article',
+              component: () => import('@/views/article/index'),
+              meta: { title: '文章管理', icon: 'el-icon-user' }
+            },
+            {
+              path: 'video',
+              name: 'video',
+              component: () => import('@/views/tree/index'),
+              meta: { title: '视频管理', icon: 'el-icon-video-camera-solid' }
+            },
+            {
+              path: 'swiper',
+              name: 'swiper',
+              component: () => import('@/views/tree/index'),
+              meta: { title: '轮播图管理', icon: 'el-icon-picture' }
+            }
+          ]
+      },
     ]
   },
 
