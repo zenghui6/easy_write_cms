@@ -105,7 +105,7 @@ export const constantRoutes = [
       {
         path: 'swiper',
         name: 'swiper',
-        component: () => import('@/views/tree/index'),
+        component: () => import('@/views/swiper/index'),
         meta: { title: '轮播图发布', icon: 'el-icon-picture' }
       }
     ]
@@ -142,13 +142,13 @@ export const constantRoutes = [
       {
         path: 'video',
         name: 'video',
-        component: () => import('@/views/tree/index'),
+        component: () => import('@/views/article/index'),
         meta: { title: '视频管理', icon: 'el-icon-video-camera-solid' }
       },
       {
         path: 'swiper',
         name: 'swiper',
-        component: () => import('@/views/tree/index'),
+        component: () => import('@/views/article/index'),
         meta: { title: '轮播图管理', icon: 'el-icon-picture' }
       }
     ]
@@ -172,7 +172,7 @@ export const constantRoutes = [
       {
         path: 'examine',
         name: 'examine',
-        component: () => import('@/views/tree/index'),
+        component: () => import('@/views/article/index'),
         meta: { title: '审核', icon: 'el-icon-search'
        },
           children: [
@@ -185,13 +185,13 @@ export const constantRoutes = [
             {
               path: 'video',
               name: 'video',
-              component: () => import('@/views/tree/index'),
+              component: () => import('@/views/article/index'),
               meta: { title: '视频管理', icon: 'el-icon-video-camera-solid' }
             },
             {
               path: 'swiper',
               name: 'swiper',
-              component: () => import('@/views/tree/index'),
+              component: () => import('@/views/article/index'),
               meta: { title: '轮播图管理', icon: 'el-icon-picture' }
             }
           ]

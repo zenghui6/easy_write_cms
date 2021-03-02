@@ -39,26 +39,24 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="标题" width="200">
+      <el-table-column label="轮播图名称" width="200">
         <template slot-scope="scope">
-          {{ scope.row.videoTitle }}
+          {{ scope.row.swiperName }}
         </template>
       </el-table-column>
-      <el-table-column label="作者" width="110" align="center">
+
+       <el-table-column label="轮播图地址" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.videoAuthor }}</span>
+          {{ scope.row.swiperPic | ellipsis }}
+        </template>
+       </el-table-column>
+
+       <el-table-column class-name="status-col" label="状态" width="110" align="center">
+        <template slot-scope="scope">
+          <el-tag :type="scope.row.swiperStatus | statusFilter">{{ scope.row.swiperStatus | tans}}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="视频简介" align="center">
-        <template slot-scope="scope">
-          {{ scope.row.videoProfile | ellipsis }}
-        </template>
-      </el-table-column>
-      <el-table-column class-name="status-col" label="状态" width="110" align="center">
-        <template slot-scope="scope">
-          <el-tag :type="scope.row.videoStatus | statusFilter">{{ scope.row.videoStatus | tans}}</el-tag>
-        </template>
-      </el-table-column>
+  
 
       <el-table-column label="操作" align="center" width="330" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
@@ -66,11 +64,11 @@
           @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button v-if="row.videoStatus =='draft'" size="mini" type="success"
+          <el-button v-if="row.swiperStatus =='draft'" size="mini" type="success"
           @click="toWait(row)" >
             提审
           </el-button>
-          <el-button v-if="row.videoStatus!='deleted'" size="mini" type="danger"
+          <el-button v-if="row.swiperStatus!='deleted'" size="mini" type="danger"
           @click="toDelete(row)" >
             删除
           </el-button>
@@ -85,20 +83,10 @@
       <!-- 浮空栏 -->
       <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:40px;">
-        <el-form-item label="标题" prop="title">
-          <el-input v-model="temp.videoTitle" />
+        <el-form-item label="名称" prop="title">
+          <el-input v-model="temp.swiperName" />
         </el-form-item>
-         <el-form-item label="简介" prop="title">
-          <el-input v-model="temp.videoProfile" />
-        </el-form-item>
-        <el-form-item label="日期" prop="timestamp">
-          <el-date-picker v-model="temp.videoDate" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" format="yyyy-MM-dd HH:mm:ss"  placeholder="Please pick a date" />
-        </el-form-item>
-        <el-form-item label="作者" prop="author">
-          <el-input v-model="temp.videoAuthor"  style="width: 200px;"/>
-        </el-form-item>
-
-        <el-form-item label="封面图" prop="封面图" style="margin-bottom: 30px;">
+        <el-form-item prop="封面图" style="margin-bottom: 30px;">
             <el-upload
                 class="avatar-uploader"
                 action="http://localhost:8000/picture/OSSupload"
@@ -106,24 +94,9 @@
                 :on-success="handleAvatarSuccess"
                 :on-remove="handleRemove"
                 :before-upload="beforeAvatarUpload">
-                <img v-if="temp.videoPic" :src="temp.videoPic" class="avatar">
+                <img v-if="temp.swiperPic" :src="temp.swiperPic" class="avatar">
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
             </el-upload>
-        </el-form-item>
-
-        <el-form-item label="视频上传" prop="Video">
-  <!-- action必选参数, 上传的地址 -->
-            <el-upload class="avatar-uploader el-upload--text" 
-            action="http://localhost:8000/picture/OSSupload"
-            :show-file-list="false" 
-            :on-success="handleVideoSuccess" 
-            :before-upload="beforeUploadVideo" 
-            :on-progress="uploadVideoProcess">
-                <video v-if="temp.videoUrl !='' && videoFlag == false" :src="temp.videoUrl" class="avatar" controls="controls">您的浏览器不支持视频播放</video>
-                <i v-else-if="temp.videoUrl =='' && videoFlag == false" class="el-icon-plus avatar-uploader-icon"></i>
-                <el-progress v-if="videoFlag == true" type="circle" :percentage="videoUploadPercent" style="margin-top:30px;"></el-progress>
-            </el-upload>
-            <P class="text">请保证视频格式正确，且不超过10M</P>
         </el-form-item>
 
      
@@ -152,7 +125,7 @@
 </template>
 
 <script>
-import { getVideoList,updateVideo, createVideo} from '@/api/admin/video'
+import { getSwiperList,updateSwiper, createSwiper} from '@/api/admin/swiper'
 import {deletePic} from '@/api/admin/picture'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
@@ -190,18 +163,11 @@ export default {
       listLoading: true,
 
       temp: {
-        videoTitle:'',
-        videoProfile:'',
-        videoUrl: '',//上传后返回
-        videoPic: '',//封面图，上传后返回
-        videoDate: new Date(),
-        videoStatus:'draft',
-        videoAuthor:'',
+        swiperName:'',
+        swiperPic: '',//封面图，上传后返回Url
+        swiperStatus:'draft',
       },
 
-    //   视频上传相关
-    videoFlag:'',
-    videoUploadPercent:0,
 
       dialogFormVisible: false,
       dialogStatus: '',
@@ -212,12 +178,8 @@ export default {
       dialogPvVisible: false,
       pvData: [],
       rules: {
-        videoTitle:[{ required: true, message: '标题必填', trigger: 'blur' }],
-        videoProfile:'',
-        videoUrl:[{ type: 'date', required: true, message: '视频内容必填', trigger: 'change' }],//上传后返回
-        videoPic:'',//封面图，上传后返回
-        videoDate: [{ type: 'date', required: true, message: '视频发布日期必填', trigger: 'change' }],
-        videoAuthor:'',
+        swiperTitle:[{ required: true, message: '标题必填', trigger: 'blur' }],
+        swiperPic:[{ type: 'date', required: true, message: '图片内容必填', trigger: 'change' }],//封面图，上传后返回
       },
       downloadLoading: false
     }
@@ -228,7 +190,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      getVideoList(this.listQuery).then(response => {
+      getSwiperList(this.listQuery).then(response => {
          const { data } = response
         this.list = data.data
         this.total = response.data.total
@@ -255,14 +217,14 @@ export default {
       return sort === `+${key}` ? 'ASC' : 'DESC'
     },
     goCreate(){
-      this.$router.push('/client/video/create')
+      this.$router.push('/client/swiper/create')
     },
     edit(id){
-      this.$router.push('/client/video/edit/'+id)
+      this.$router.push('/client/swiper/edit/'+id)
     },
-    toWait(video){
-      video.videoStatus = 'wait'
-      updateVideo(video).then(response =>{
+    toWait(swiper){
+      swiper.swiperStatus = 'wait'
+      updateSwiper(swiper).then(response =>{
            this.$message({
           message: '提审成功，待审核',
           type: 'success'
@@ -270,9 +232,9 @@ export default {
         this.getList();
       })
     },
-    toDelete(video){
-      video.videoStatus = 'deleted'
-      updateVideo(video).then(response =>{
+    toDelete(swiper){
+      swiper.swiperStatus = 'deleted'
+      updateSwiper(swiper).then(response =>{
            this.$message({
           message: '删除成功',
           type: 'success'
@@ -285,13 +247,9 @@ export default {
 
    resetTemp() {
       this.temp = {
-        videoTitle:'',
-        videoProfile:'',
-        videoUrl:'',//上传后返回
-        videoPic: '',//封面图，上传后返回
-        videoDate:'',
-        videoStatus:'draft',
-        videoAuthor:'',
+         swiperName:'',
+        swiperPic: '',//封面图，上传后返回Url
+        swiperStatus:'draft',
       }
     },
     handleCreate() {
@@ -305,7 +263,7 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          createVideo(this.temp).then(() => {
+          createSwiper(this.temp).then(() => {
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -332,7 +290,7 @@ export default {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
           tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateVideo(tempData).then(() => {
+          updateSwiper(tempData).then(() => {
             const index = this.list.findIndex(v => v.id === this.temp.id)
             this.list.splice(index, 1, this.temp)
             this.dialogFormVisible = false
@@ -365,7 +323,7 @@ export default {
 
     // 图片上传
     handleAvatarSuccess(res, file) {
-        this.temp.videoPic = res.data.url
+        this.temp.swiperPic = res.data.url
       },
     beforeAvatarUpload(file) {
         const isJPG = file.type === 'image/jpeg';
@@ -381,43 +339,12 @@ export default {
       },
     // 移除图片
     handleRemove() {
-        let file = this.temp.videoPic.split('?')[0].split('/')
+        let file = this.temp.swiperPic.split('?')[0].split('/')
         let picName = file[file.length - 1]
         console.log(picName);
          deletePic(picName)
-        this.temp.videoPic = ''
+        this.temp.swiperPic = ''
     },
-
-
-    // 视频上传
-    beforeUploadVideo(file) {
-        const isLt10M = file.size / 1024 / 1024  < 20;
-        if (['video/mp4', 'video/ogg', 'video/flv','video/avi','video/wmv','video/rmvb'].indexOf(file.type) == -1) {
-            this.$message.error('请上传正确的视频格式');
-            return false;
-        }
-        if (!isLt10M) {
-            this.$message.error('上传视频大小不能超过20MB哦!');
-            return false;
-        }
-    },
-    handleVideoSuccess(res, file) {                               //获取上传图片地址
-        this.videoFlag = false;
-        this.videoUploadPercent = 0;
-        console.log(res);
-        if(res.code == 200){
-            this.temp.videoUrl = res.data.url;
-        }else{
-            this.$message.error('视频上传失败，请重新上传！');
-        }
-    },
-    uploadVideoProcess (event, file, fileList) {
-        console.log(event.percent, file, fileList)
-        this.videoFlag = true
-        // this.videoUploadPercent = file.percentage.toFixed(0)
-        // this.videoUploadPercent = event.percent.toFixed(0)
-        this.videoUploadPercent = Math.floor(event.percent)
-      },
 
   }
 }
