@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getArticleList(data) {
   return request({
-    url: '/admin/article/find_all',
+    url: '/staff/article/find_all_by_keywords',
     method: 'post',
     data
   })
@@ -16,9 +16,17 @@ export function createArticle(data) {
   })
 }
 
+export function updateArticle(data) {
+  return request({
+    url: '/staff/article/update',
+    method: 'put',
+    data
+  })
+}
+
 export function fetchArticle(id) {
   return request({
-    url: 'client/article/find_one_by_id/'+id,
+    url: '/staff/article/find_one_by_id/'+id,
     method: 'get',
   })
 }

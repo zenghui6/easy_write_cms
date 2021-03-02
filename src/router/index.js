@@ -80,14 +80,14 @@ export const constantRoutes = [
       },
 
       {
-        path: 'create',
+        path: 'article/create',
         name: 'create',
         hidden: true ,
         component: () => import('@/views/article/create/index'),
         meta: { title: '新建文章', icon: 'el-icon-s-management' ,activeMenu: '/client/article'}
       },
       {
-        path: 'edit/:id/',
+        path: 'article/edit/:id/',
         component: () => import('@/views/article/edit'),
         name: 'EditArticle',
         meta: { title: 'Edit Article', noCache: true, activeMenu: '/client/article' },
@@ -99,7 +99,7 @@ export const constantRoutes = [
       {
         path: 'video',
         name: 'video',
-        component: () => import('@/views/tree/index'),
+        component: () => import('@/views/video/index'),
         meta: { title: '视频发布', icon: 'el-icon-video-camera-solid' }
       },
       {
@@ -199,8 +199,8 @@ export const constantRoutes = [
     ]
   },
 
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  // // 404 page must be placed at the end !!!
+  // { path: '*', redirect: '/404', hidden: true }
 ]
 
 const createRouter = () => new Router({

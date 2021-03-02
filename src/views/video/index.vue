@@ -15,7 +15,7 @@
         搜索
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit"
-      @click="goCreate">
+      @click="handleCreate">
         添加
       </el-button>
 
@@ -41,36 +41,36 @@
 
       <el-table-column label="标题" width="200">
         <template slot-scope="scope">
-          {{ scope.row.title }}
+          {{ scope.row.videoTitle }}
         </template>
       </el-table-column>
       <el-table-column label="作者" width="110" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
+          <span>{{ scope.row.videoAuthor }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="文章内容" align="center">
+      <el-table-column label="视频简介" align="center">
         <template slot-scope="scope">
-          {{ scope.row.article | ellipsis }}
+          {{ scope.row.videoProfile | ellipsis }}
         </template>
       </el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110" align="center">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status | tans}}</el-tag>
+          <el-tag :type="scope.row.videoStatus | statusFilter">{{ scope.row.videoStatus | tans}}</el-tag>
         </template>
       </el-table-column>
 
       <el-table-column label="操作" align="center" width="330" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" 
-          @click="edit(row.id)">
+          @click="handleUpdate(row)">
             编辑
           </el-button>
-          <el-button v-if="row.status =='draft'" size="mini" type="success"
+          <el-button v-if="row.videoStatus =='draft'" size="mini" type="success"
           @click="toWait(row)" >
             提审
           </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger"
+          <el-button v-if="row.videoStatus!='deleted'" size="mini" type="danger"
           @click="toDelete(row)" >
             删除
           </el-button>
@@ -82,37 +82,58 @@
 
 
 
-
       <!-- 浮空栏 -->
       <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:40px;">
         <el-form-item label="标题" prop="title">
-          <el-input v-model="temp.title" />
+          <el-input v-model="temp.videoTitle" />
+        </el-form-item>
+         <el-form-item label="简介" prop="title">
+          <el-input v-model="temp.videoProfile" />
         </el-form-item>
         <el-form-item label="日期" prop="timestamp">
-          <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
+          <el-date-picker v-model="temp.videoDate" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" format="yyyy-MM-dd HH:mm:ss"  placeholder="Please pick a date" />
         </el-form-item>
         <el-form-item label="作者" prop="author">
-          <el-input v-model="temp.title" />
+          <el-input v-model="temp.videoAuthor"  style="width: 200px;"/>
         </el-form-item>
-        <el-form-item label="Status">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in 3" :key="item" :label="item" :value="item" />
-          </el-select>
+
+        <el-form-item prop="封面图" style="margin-bottom: 30px;">
+            <el-upload
+                class="avatar-uploader"
+                action="http://localhost:8000/picture/OSSupload"
+                :show-file-list="true"
+                :on-success="handleAvatarSuccess"
+                :on-remove="handleRemove"
+                :before-upload="beforeAvatarUpload">
+                <img v-if="temp.videoPic" :src="temp.videoPic" class="avatar">
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
         </el-form-item>
-        <el-form-item label="Imp">
-          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />
+
+        <el-form-item label="视频上传" prop="Video">
+  <!-- action必选参数, 上传的地址 -->
+            <el-upload class="avatar-uploader el-upload--text" 
+            action="http://localhost:8000/picture/OSSupload"
+            :show-file-list="false" 
+            :on-success="handleVideoSuccess" 
+            :before-upload="beforeUploadVideo" 
+            :on-progress="uploadVideoProcess">
+                <video v-if="temp.videoUrl !='' && videoFlag == false" :src="temp.videoUrl" class="avatar" controls="controls">您的浏览器不支持视频播放</video>
+                <i v-else-if="temp.videoUrl =='' && videoFlag == false" class="el-icon-plus avatar-uploader-icon"></i>
+                <el-progress v-if="videoFlag == true" type="circle" :percentage="videoUploadPercent" style="margin-top:30px;"></el-progress>
+            </el-upload>
+            <P class="text">请保证视频格式正确，且不超过10M</P>
         </el-form-item>
-        <el-form-item label="Remark">
-          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />
-        </el-form-item>
+
+     
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
-          Cancel
+          取消
         </el-button>
         <el-button type="primary" @click="dialogStatus==='create'?createData():updateData()">
-          Confirm
+          确定
         </el-button>
       </div>
     </el-dialog>
@@ -131,7 +152,8 @@
 </template>
 
 <script>
-import { getArticleList,updateArticle} from '@/api/admin/article'
+import { getVideoList,updateVideo, createVideo} from '@/api/admin/video'
+import {deletePic} from '@/api/admin/picture'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
@@ -168,14 +190,19 @@ export default {
       listLoading: true,
 
       temp: {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        type: '',
-        status: 'published'
+        videoTitle:'',
+        videoProfile:'',
+        videoUrl: '',//上传后返回
+        videoPic: '',//封面图，上传后返回
+        videoDate: new Date(),
+        videoStatus:'draft',
+        videoAuthor:'',
       },
+
+    //   视频上传相关
+    videoFlag:'',
+    videoUploadPercent:0,
+
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
@@ -185,9 +212,12 @@ export default {
       dialogPvVisible: false,
       pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        videoTitle:[{ required: true, message: '标题必填', trigger: 'blur' }],
+        videoProfile:'',
+        videoUrl:[{ type: 'date', required: true, message: '视频内容必填', trigger: 'change' }],//上传后返回
+        videoPic:'',//封面图，上传后返回
+        videoDate: [{ type: 'date', required: true, message: '视频发布日期必填', trigger: 'change' }],
+        videoAuthor:'',
       },
       downloadLoading: false
     }
@@ -198,7 +228,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      getArticleList(this.listQuery).then(response => {
+      getVideoList(this.listQuery).then(response => {
          const { data } = response
         this.list = data.data
         this.total = response.data.total
@@ -225,14 +255,14 @@ export default {
       return sort === `+${key}` ? 'ASC' : 'DESC'
     },
     goCreate(){
-      this.$router.push('/client/article/create')
+      this.$router.push('/client/video/create')
     },
     edit(id){
-      this.$router.push('/client/article/edit/'+id)
+      this.$router.push('/client/video/edit/'+id)
     },
-    toWait(article){
-      article.status = 'wait'
-      updateArticle(article).then(response =>{
+    toWait(video){
+      video.videoStatus = 'wait'
+      updateVideo(video).then(response =>{
            this.$message({
           message: '提审成功，待审核',
           type: 'success'
@@ -240,9 +270,9 @@ export default {
         this.getList();
       })
     },
-    toDelete(article){
-      article.status = 'deleted'
-      updateArticle(article).then(response =>{
+    toDelete(video){
+      video.videoStatus = 'deleted'
+      updateVideo(video).then(response =>{
            this.$message({
           message: '删除成功',
           type: 'success'
@@ -255,13 +285,13 @@ export default {
 
    resetTemp() {
       this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+        videoTitle:'',
+        videoProfile:'',
+        videoUrl:'',//上传后返回
+        videoPic: '',//封面图，上传后返回
+        videoDate:'',
+        videoStatus:'draft',
+        videoAuthor:'',
       }
     },
     handleCreate() {
@@ -275,24 +305,22 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
+          createVideo(this.temp).then(() => {
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
               title: 'Success',
-              message: 'Created Successfully',
+              message: '添加成功',
               type: 'success',
               duration: 2000
             })
+            this.getList()
           })
         }
       })
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -304,16 +332,17 @@ export default {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
           tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
+          updateVideo(tempData).then(() => {
             const index = this.list.findIndex(v => v.id === this.temp.id)
             this.list.splice(index, 1, this.temp)
             this.dialogFormVisible = false
             this.$notify({
               title: 'Success',
-              message: 'Update Successfully',
+              message: '更新成功',
               type: 'success',
               duration: 2000
             })
+            this.getList()
           })
         }
       })
@@ -333,7 +362,90 @@ export default {
         this.dialogPvVisible = true
       })
     },
+
+    // 图片上传
+    handleAvatarSuccess(res, file) {
+        this.temp.videoPic = res.data.url
+      },
+    beforeAvatarUpload(file) {
+        const isJPG = file.type === 'image/jpeg';
+        const isLt2M = file.size / 1024 / 1024 < 2;
+
+        if (!isJPG) {
+          this.$message.error('上传头像图片只能是 JPG 格式!');
+        }
+        if (!isLt2M) {
+          this.$message.error('上传头像图片大小不能超过 2MB!');
+        }
+        return isJPG && isLt2M;
+      },
+    // 移除图片
+    handleRemove() {
+        let file = this.temp.videoPic.split('?')[0].split('/')
+        let picName = file[file.length - 1]
+        console.log(picName);
+         deletePic(picName)
+        this.temp.videoPic = ''
+    },
+
+
+    // 视频上传
+    beforeUploadVideo(file) {
+        const isLt10M = file.size / 1024 / 1024  < 20;
+        if (['video/mp4', 'video/ogg', 'video/flv','video/avi','video/wmv','video/rmvb'].indexOf(file.type) == -1) {
+            this.$message.error('请上传正确的视频格式');
+            return false;
+        }
+        if (!isLt10M) {
+            this.$message.error('上传视频大小不能超过20MB哦!');
+            return false;
+        }
+    },
+    handleVideoSuccess(res, file) {                               //获取上传图片地址
+        this.videoFlag = false;
+        this.videoUploadPercent = 0;
+        console.log(res);
+        if(res.code == 200){
+            this.temp.videoUrl = res.data.url;
+        }else{
+            this.$message.error('视频上传失败，请重新上传！');
+        }
+    },
+    uploadVideoProcess (event, file, fileList) {
+        console.log(event.percent, file, fileList)
+        this.videoFlag = true
+        // this.videoUploadPercent = file.percentage.toFixed(0)
+        // this.videoUploadPercent = event.percent.toFixed(0)
+        this.videoUploadPercent = Math.floor(event.percent)
+      },
+
   }
 }
 
 </script>
+
+<style>
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
+</style>

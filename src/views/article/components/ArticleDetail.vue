@@ -51,12 +51,12 @@
             <el-form-item>
               <el-button
                 type="primary"
-                @click="submitForm('ruleForm')"
+                @click="submitForm('ruleForm','draft')"
               >草稿
               </el-button>
                <el-button
                 type="success"
-                @click="submitForm('ruleForm')"
+                @click="submitForm('ruleForm','wait')"
               >提审
               </el-button>
               <el-button @click="resetForm('ruleForm')">重置</el-button>
@@ -90,7 +90,7 @@ export default {
         pic:'111',
         createAt: undefined,
         article: '', // 内容
-
+        status:'',
         tempRoute: {}
       },
       rules: {
@@ -126,8 +126,8 @@ export default {
   created(){
     if (this.isEdit) {
       const id = this.$route.params && this.$route.params.id
+      console.log(id);
       this.fetchData(id)
-      console.log(this.ruleForm.article);
     }
 
     this.tempRoute = Object.assign({}, this.$route)
@@ -180,7 +180,7 @@ export default {
       const title = 'Edit Article'
       document.title = `${title} - ${this.ruleForm.id}`
     },
-    submitForm(formName) {
+    submitForm(formName,status) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           if (
@@ -193,6 +193,7 @@ export default {
           }
      
           this.ruleForm.article = this.contentEditor.getValue()
+          this.ruleForm.status = status
           createArticle(this.ruleForm).then((response) => {
             const { data } = response
             setTimeout(() => {
