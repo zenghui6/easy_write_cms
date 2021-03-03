@@ -96,7 +96,8 @@ export default {
         reviewed: 'success',
         draft: 'info',
         deleted: 'danger',
-        wait: 'gray'
+        wait: 'gray',
+        published: 'success'
       }
       return statusMap[status]
     },
@@ -104,6 +105,7 @@ export default {
       if (word ==  'reviewed') return '已审阅'
       else if (word ==  'draft') return '草稿'
      else if(word== 'deleted') return '删除'
+     else if(word == 'published') return '已发布'
      else return '待审'
 
     }
@@ -186,7 +188,7 @@ export default {
     toWait(article){
       article.status = 'wait'
       updateArticle(article).then(response =>{
-           this.$message({
+           this.$notify({
           message: '提审成功，待审核',
           type: 'success'
         });
@@ -196,7 +198,7 @@ export default {
     toDelete(article){
       article.status = 'deleted'
       updateArticle(article).then(response =>{
-           this.$message({
+           this.$notify({
           message: '删除成功',
           type: 'success'
         });

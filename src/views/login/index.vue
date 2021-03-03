@@ -3,7 +3,7 @@
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <h3 class="title">登录</h3>
       </div>
 
       <el-form-item prop="username">
@@ -41,20 +41,23 @@
         </span>
       </el-form-item>
 
-     <el-form-item prop="username">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
-        <el-input
-          ref="level"
-          v-model="loginForm.level"
-          placeholder="等级"
-          name="level"
-          type="text"
-          tabindex="1"
-          auto-complete="on"
-        />
-      </el-form-item>
+
+        <el-select v-model="loginForm.level" placeholder="请选择">
+          <el-option
+           label="管理员"
+           value="admin"
+           >
+          </el-option>
+          <el-option
+           label="普通员工"
+           value="staff"
+           >
+          </el-option>
+        </el-select>
+      
 
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
 

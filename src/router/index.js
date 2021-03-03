@@ -153,62 +153,13 @@ export const constantRoutes = [
       }
     ]
   },
-  // {
-  //   path: '/admin',
-  //   component: Layout,
-  //   redirect: '/admin',
-  //   name: 'admin',
-  //   meta: {
-  //     title: '管理员',
-  //     icon: 'el-icon-s-custom',
-  //     roles: ['admin']
-  //   },
-  //   children: [
-  //     {
-  //       path: 'article',
-  //       name: 'article',
-  //       component: () => import('@/views/article/index'),
-  //       meta: { title: '人员管理', icon: 'el-icon-user', roles: ['admin'] }
-  //     },
-  //     {
-  //       path: 'examine',
-  //       name: 'examine',
-  //       component: () => import('@/views/article/index'),
-  //       meta: { title: '审核', icon: 'el-icon-search', roles: ['admin']
-  //      },
-  //         children: [
-  //           {
-  //             path: 'article',
-  //             name: 'article',
-  //             component: () => import('@/views/article/index'),
-  //             meta: { title: '文章管理', icon: 'el-icon-user' , roles: ['admin']}
-  //           },
-  //           {
-  //             path: 'video',
-  //             name: 'video',
-  //             component: () => import('@/views/article/index'),
-  //             meta: { title: '视频管理', icon: 'el-icon-video-camera-solid', roles: ['admin'] }
-  //           },
-  //           {
-  //             path: 'swiper',
-  //             name: 'swiper',
-  //             component: () => import('@/views/article/index'),
-  //             meta: { title: '轮播图管理', icon: 'el-icon-picture' , roles: ['admin']}
-  //           }
-  //         ]
-  //     },
-  //   ]
-  // },
-
-  // // 404 page must be placed at the end !!!
-  // { path: '*', redirect: '/404', hidden: true }
 ]
 
 export const asyncRoutes = [
   {
     path: '/admin',
     component: Layout,
-    redirect: '/admin',
+    redirect: '/admin/account',
     name: 'admin',
     meta: {
       title: '管理员',
@@ -219,32 +170,31 @@ export const asyncRoutes = [
       {
         path: 'account',
         name: 'account',
-        component: () => import('@/views/article/index'),
+        component: () => import('@/views/admin/account/index'),
         meta: { title: '人员管理', icon: 'el-icon-user', roles: ['admin'] }
       },
       {
-        path: 'publish',
+        path: 'publish/articlePub',
         name: 'publish',
-        component: () => import('@/views/article/index'),
         meta: { title: '审核', icon: 'el-icon-search', roles: ['admin']
        },
           children: [
             {
               path: 'articlePub',
               name: 'articlePub',
-              component: () => import('@/views/article/index'),
+              component: () => import('@/views/admin/publish/article/index'),
               meta: { title: '文章管理', icon: 'el-icon-user' , roles: ['admin']}
             },
             {
               path: 'videoPub',
               name: 'videoPub',
-              component: () => import('@/views/article/index'),
+              component: () => import('@/views/admin/publish/video/index'),
               meta: { title: '视频管理', icon: 'el-icon-video-camera-solid', roles: ['admin'] }
             },
             {
               path: 'swiperPub',
               name: 'swiperPub',
-              component: () => import('@/views/article/index'),
+              component: () => import('@/views/admin/publish/swiper/index'),
               meta: { title: '轮播图管理', icon: 'el-icon-picture' , roles: ['admin']}
             }
           ]

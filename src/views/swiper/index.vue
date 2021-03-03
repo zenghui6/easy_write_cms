@@ -225,7 +225,7 @@ export default {
     toWait(swiper){
       swiper.swiperStatus = 'wait'
       updateSwiper(swiper).then(response =>{
-           this.$message({
+           this.$notify({
           message: '提审成功，待审核',
           type: 'success'
         });
@@ -235,7 +235,7 @@ export default {
     toDelete(swiper){
       swiper.swiperStatus = 'deleted'
       updateSwiper(swiper).then(response =>{
-           this.$message({
+           this.$notify({
           message: '删除成功',
           type: 'success'
         });
