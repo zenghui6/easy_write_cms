@@ -156,7 +156,6 @@ export default {
          const { data } = response
         this.list = data.data
         this.total = response.data.total
-        console.log(this.list);
         this.listLoading = false
       })
     },
