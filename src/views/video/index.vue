@@ -164,16 +164,17 @@ export default {
         reviewed: 'success',
         draft: 'info',
         deleted: 'danger',
-        wait: 'gray'
+        wait: 'gray',
+        published: 'warning'
       }
       return statusMap[status]
     },
-    tans(word){
+  tans(word){
       if (word ==  'reviewed') return '已审阅'
       else if (word ==  'draft') return '草稿'
      else if(word== 'deleted') return '删除'
+     else if(word == 'published') return '已上架'
      else return '待审'
-
     }
   },
   data() {

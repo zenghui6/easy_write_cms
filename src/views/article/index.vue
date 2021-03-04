@@ -97,7 +97,7 @@ export default {
         draft: 'info',
         deleted: 'danger',
         wait: 'gray',
-        published: 'success'
+        published: 'warning'
       }
       return statusMap[status]
     },
@@ -105,9 +105,8 @@ export default {
       if (word ==  'reviewed') return '已审阅'
       else if (word ==  'draft') return '草稿'
      else if(word== 'deleted') return '删除'
-     else if(word == 'published') return '已发布'
+     else if(word == 'published') return '已上架'
      else return '待审'
-
     }
   },
   data() {

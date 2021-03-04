@@ -174,8 +174,10 @@ export const asyncRoutes = [
         meta: { title: '人员管理', icon: 'el-icon-user', roles: ['admin'] }
       },
       {
-        path: 'publish/articlePub',
+        path: 'publish',
         name: 'publish',
+        redirect: '/admin/publishj/articlePub',
+        component: () => import('@/views/admin/publish/index'),
         meta: { title: '审核', icon: 'el-icon-search', roles: ['admin']
        },
           children: [
@@ -184,6 +186,13 @@ export const asyncRoutes = [
               name: 'articlePub',
               component: () => import('@/views/admin/publish/article/index'),
               meta: { title: '文章管理', icon: 'el-icon-user' , roles: ['admin']}
+            },
+            {
+              path: 'article/edit/:id/',
+              component: () => import('@/views/admin/publish/article/edit'),
+              name: 'EditArticle',
+              meta: { title: 'Edit Article', noCache: true, activeMenu: '/admin/publish/articlePub' },
+              hidden: true
             },
             {
               path: 'videoPub',
