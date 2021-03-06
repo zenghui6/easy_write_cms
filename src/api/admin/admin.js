@@ -84,6 +84,34 @@ export function fetchVideo(id) {
 }
 
 
+/**----------------------轮播图审核相关------------------- */
+
+export function getSwiperList(data) {
+  return request({
+    url: '/admin/swiper/find_all_class',
+    method: 'post',
+    data
+  })
+}
+
+export function updateSwiper(data) {
+  return request({
+    url: '/staff/web_swiper/update',
+    method: 'put',
+    data
+  })
+}
+
+export function fetchSwiper(id) {
+  return request({
+    url: '/staff/swiper/find_one_by_id/'+id,
+    method: 'get',
+  })
+}
+
+
+
+
 
 
 

@@ -6,3 +6,10 @@ export function deletePic(data) {
       method: 'post',
     })
   }
+
+  export function deleteLocalPic(data) {
+    return request({
+      url: 'picture/OSSdel/'+data,
+      method: 'post',
+    })
+  }

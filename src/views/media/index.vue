@@ -49,9 +49,19 @@
           <span>{{ scope.row.videoAuthor }}</span>
         </template>
       </el-table-column>
+       <el-table-column label="视频链接" width="110" align="center">
+        <template slot-scope="scope">
+          {{ scope.row.videoCid }}
+        </template>
+      </el-table-column>
       <el-table-column label="视频简介" align="center">
         <template slot-scope="scope">
           {{ scope.row.videoProfile | ellipsis }}
+        </template>
+      </el-table-column>
+       <el-table-column label="分类" width="110">
+        <template slot-scope="scope">
+          {{ scope.row.videoClass }}
         </template>
       </el-table-column>
       <el-table-column class-name="status-col" label="状态" width="110" align="center">
@@ -89,10 +99,10 @@
           <el-input v-model="temp.videoTitle" />
         </el-form-item>
          <el-form-item label="简介" prop="title">
-          <el-input v-model="temp.videoProfile" />
-        </el-form-item>
-        <el-form-item label="日期" prop="timestamp">
-          <el-date-picker v-model="temp.videoDate" type="datetime" value-format="yyyy-MM-dd HH:mm:ss" format="yyyy-MM-dd HH:mm:ss"  placeholder="Please pick a date" />
+          <el-input
+          type="textarea"
+          rows="3"
+           v-model="temp.videoProfile" />
         </el-form-item>
         <el-form-item label="作者" prop="author">
           <el-input v-model="temp.videoAuthor"  style="width: 200px;"/>
@@ -101,12 +111,12 @@
         <el-form-item label="封面图" prop="封面图" style="margin-bottom: 30px;">
             <el-upload
                 class="avatar-uploader"
-                action="http://localhost:8000/picture/OSSupload"
+                action="http://localhost:8000/picture/upload"
                 :show-file-list="true"
                 :on-success="handleAvatarSuccess"
                 :on-remove="handleRemove"
                 :before-upload="beforeAvatarUpload">
-                <img v-if="temp.videoPic" :src="temp.videoPic" class="avatar">
+                <img v-if="temp.videoPic" :src="'http://localhost:8000/api/file/'+temp.videoPic" class="avatar">
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
             </el-upload>
         </el-form-item>
@@ -114,17 +124,53 @@
         <el-form-item label="视频上传" prop="Video">
   <!-- action必选参数, 上传的地址 -->
             <el-upload class="avatar-uploader el-upload--text" 
-            action="http://localhost:8000/picture/OSSupload"
+            action="http://localhost:8000/picture/upload"
             :show-file-list="false" 
             :on-success="handleVideoSuccess" 
             :before-upload="beforeUploadVideo" 
             :on-progress="uploadVideoProcess">
-                <video v-if="temp.videoUrl !='' && videoFlag == false" :src="temp.videoUrl" class="avatar" controls="controls">您的浏览器不支持视频播放</video>
+                <video v-if="temp.videoUrl !='' && videoFlag == false" :src="'http://localhost:8000/api/file/'+temp.videoUrl" class="avatar" controls="controls">您的浏览器不支持视频播放</video>
                 <i v-else-if="temp.videoUrl =='' && videoFlag == false" class="el-icon-plus avatar-uploader-icon"></i>
                 <el-progress v-if="videoFlag == true" type="circle" :percentage="videoUploadPercent" style="margin-top:30px;"></el-progress>
             </el-upload>
-            <P class="text">请保证视频格式正确，且不超过10M</P>
+            <P class="text">请保证视频格式正确，且不超过20M</P>
         </el-form-item>
+
+<!--        投稿视频分区       -->
+        <el-form-item label="分区" prop="class" >
+            <el-select v-model="temp.videoClass" placeholder="请选择">
+                <el-option
+                v-for="item in options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+                </el-option>
+            </el-select>
+        </el-form-item>
+
+        <!-- 标签 -->
+        <el-form-item label="视频标签" prop="tag" >
+         <el-tag
+            :key="tag"
+            v-for="tag in dynamicTags"
+            closable
+            :disable-transitions="false"
+            @close="handleClose(tag)">
+            {{tag}}
+            </el-tag>
+            <el-input
+            class="input-new-tag"
+            v-if="inputVisible"
+            v-model="inputValue"
+            ref="saveTagInput"
+            size="small"
+            @keyup.enter.native="handleInputConfirm"
+            @blur="handleInputConfirm"
+            >
+        </el-input>
+        <el-button v-else class="button-new-tag" size="small" @click="showInput">+ New Tag</el-button>
+        </el-form-item>
+
 
      
       </el-form>
@@ -152,7 +198,7 @@
 </template>
 
 <script>
-import { getVideoList,updateVideo, createVideo} from '@/api/admin/video'
+import { getVideoList,updateVideo, createVideo} from '@/api/admin/media'
 import {deletePic} from '@/api/admin/picture'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
@@ -195,10 +241,38 @@ export default {
         videoProfile:'',
         videoUrl: '',//上传后返回
         videoPic: '',//封面图，上传后返回
-        videoDate: new Date(),
         videoStatus:'draft',
         videoAuthor:'',
+        videoClass:'',
+        videoTag: [] ,//视频标签
       },
+
+        dynamicTags: [],
+       inputVisible: false,
+       inputValue:'',
+
+      options: [{
+          value: '21',
+          label: '日常'
+        }, {
+          value: '138',
+          label: '搞笑'
+        }, {
+          value: '163',
+          label: '运动'
+        },{
+          value: '176',
+          label: '汽车'
+        },{
+          value: '162',
+          label: '绘画'
+        },{
+          value: '161',
+          label: '手工'
+        },{
+          value: '174',
+          label: '其他'
+        }],
 
     //   视频上传相关
     videoFlag:'',
@@ -217,7 +291,6 @@ export default {
         videoProfile:'',
         videoUrl:[{ type: 'date', required: true, message: '视频内容必填', trigger: 'change' }],//上传后返回
         videoPic:'',//封面图，上传后返回
-        videoDate: [{ type: 'date', required: true, message: '视频发布日期必填', trigger: 'change' }],
         videoAuthor:'',
       },
       downloadLoading: false
@@ -255,12 +328,6 @@ export default {
       const sort = this.listQuery.direction
       return sort === `+${key}` ? 'ASC' : 'DESC'
     },
-    goCreate(){
-      this.$router.push('/client/video/create')
-    },
-    edit(id){
-      this.$router.push('/client/video/edit/'+id)
-    },
     toWait(video){
       video.videoStatus = 'wait'
       updateVideo(video).then(response =>{
@@ -293,6 +360,7 @@ export default {
         videoDate:'',
         videoStatus:'draft',
         videoAuthor:'',
+        videoTag:[]
       }
     },
     handleCreate() {
@@ -306,6 +374,8 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
+        this.temp.videoTag = this.dynamicTags.toString()
+        console.log(this.temp);
           createVideo(this.temp).then(() => {
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
@@ -315,12 +385,14 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.resetTemp()
             this.getList()
           })
         }
       })
     },
     handleUpdate(row) {
+        // console.log( row.vidoeTag.split(','));
       this.temp = Object.assign({}, row) // copy obj
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
@@ -333,7 +405,7 @@ export default {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
           tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          tempData.videoStatus ='draft'
+          tempData.videoStatus = 'draft'
           updateVideo(tempData).then(() => {
             const index = this.list.findIndex(v => v.id === this.temp.id)
             this.list.splice(index, 1, this.temp)
@@ -367,7 +439,7 @@ export default {
 
     // 图片上传
     handleAvatarSuccess(res, file) {
-        this.temp.videoPic = res.data.url
+        this.temp.videoPic = res.data
       },
     beforeAvatarUpload(file) {
         const isJPG = file.type === 'image/jpeg';
@@ -408,7 +480,7 @@ export default {
         this.videoUploadPercent = 0;
         console.log(res);
         if(res.code == 200){
-            this.temp.videoUrl = res.data.url;
+            this.temp.videoUrl = res.data;
         }else{
             this.$message.error('视频上传失败，请重新上传！');
         }
@@ -421,7 +493,28 @@ export default {
         this.videoUploadPercent = Math.floor(event.percent)
       },
 
-  }
+    //   标签
+   handleClose(tag) {
+        this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+      },
+
+      showInput() {
+        this.inputVisible = true;
+        this.$nextTick(_ => {
+          this.$refs.saveTagInput.$refs.input.focus();
+        });
+      },
+
+      handleInputConfirm() {
+        let inputValue = this.inputValue;
+        if (inputValue) {
+          this.dynamicTags.push(inputValue);
+        }
+        this.inputVisible = false;
+        this.inputValue = '';
+      }
+    }
+
 }
 
 </script>
@@ -449,5 +542,20 @@ export default {
     width: 178px;
     height: 178px;
     display: block;
+  }
+   .el-tag + .el-tag {
+    margin-left: 10px;
+  }
+  .button-new-tag {
+    margin-left: 10px;
+    height: 32px;
+    line-height: 30px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  .input-new-tag {
+    width: 90px;
+    margin-left: 10px;
+    vertical-align: bottom;
   }
 </style>

@@ -118,7 +118,7 @@ export const constantRoutes = [
     children: [{
       path: 'media',
       name: 'media',
-      component: () => import('@/views/dashboard/index'),
+      component: () => import('@/views/media/index'),
       meta: { title: '媒体分发', icon: 'el-icon-s-operation' }
     }]
   },
